@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Images/med_logo.png</file>
+        <file>Images/small_logo.png</file>
+        <file>CSVs/users.csv</file>
+        <file>qtbooks.db</file>
+    </qresource>
+</RCC>
