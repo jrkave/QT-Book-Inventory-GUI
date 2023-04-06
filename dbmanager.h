@@ -43,6 +43,9 @@ public:
     void sortPurchases();
     void writePurchasesToCSV();
     void showDialogBox();
+    // Coupon
+    bool isValidCouponCode(const QString& couponCode);
+    void applyDiscount();
 
     // Public variables
     QVector<Book> m_books;
@@ -59,6 +62,7 @@ private:
 
     // Customer
     QString purchaseListFile = "./CSVs/purchaselist.csv";
+    QString couponFile = "./CSVs/couponfile.csv";
     QString name;
     QString email;
     double total = 0.0;

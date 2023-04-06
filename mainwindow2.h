@@ -24,6 +24,9 @@ private:
     QSortFilterProxyModel* proxyModel;
 
 public slots:
+    // Open notes
+    void openNotesDialog();
+    void exportNotes(const QString &notes);
     // Navigation
     void goToInvPage();
     void goToMenuPage();
@@ -44,6 +47,8 @@ public slots:
     void setCustomer();
     void setPurchases();
     void makePurchases();
+    // Coupon
+    void checkCoupon();
 };
 
 #endif // MAINWINDOW2_H

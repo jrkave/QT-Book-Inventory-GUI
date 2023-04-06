@@ -10,6 +10,12 @@
 #include <QSortFilterProxyModel>
 #include <QSysInfo>
 #include <QStringList>
+#include <QDialog>
+#include <QTextEdit>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QFileDialog>
+#include <QTextStream>
 
 MainWindow2::MainWindow2(QWidget *parent) :
     QMainWindow(parent),
@@ -18,6 +24,11 @@ MainWindow2::MainWindow2(QWidget *parent) :
 {
     QSysInfo *sysInfo = new QSysInfo();
     ui->setupUi(this);
+
+    /* ***** QDialog for Notes **** */
+    // Create a new action for the "Notes" menu button
+    //QAction* notesAction = new QAction(tr("&Notes"), this);
+    //ui->stackedWidget->addAction(notesAction);
 
     /* ***** Table View ***** */
     model = db.getTableModel(); // Set model to data in db
@@ -37,6 +48,8 @@ MainWindow2::MainWindow2(QWidget *parent) :
     ui->tableView2->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableView2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableView2->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     /* ***** Status Bar ***** */
     int numBooks = model->rowCount();
@@ -101,6 +114,49 @@ void MainWindow2::goToPurchasePage() {
 void MainWindow2::goToSysInfoPage() {
     int sysInfoPageIndex = ui->stackedWidget->indexOf(ui->sysInfoPage);
     ui->stackedWidget->setCurrentIndex(sysInfoPageIndex);
+}
+
+/* ***** NOTES DIALOG **** */
+void MainWindow2::openNotesDialog()
+{
+    QDialog *notesDialog = new QDialog(this);
+    notesDialog->setWindowTitle("Notes");
+
+    QTextEdit *notesTextEdit = new QTextEdit(notesDialog);
+    QPushButton *exportButton = new QPushButton("Export notes", notesDialog);
+    exportButton->setStyleSheet("background-color: #7289da; color: white; border: none;");
+    exportButton->setMinimumHeight(30); // Set the minimum height to 40 pixels
+    QVBoxLayout *layout = new QVBoxLayout(notesDialog);
+
+    layout->addWidget(notesTextEdit);
+    layout->addWidget(exportButton);
+
+    notesDialog->setLayout(layout);
+
+    // Connect the button to the slot
+    connect(exportButton, &QPushButton::clicked, this, [=](){
+        exportNotes(notesTextEdit->toPlainText());
+    });
+
+    notesDialog->setAttribute(Qt::WA_DeleteOnClose);
+    notesDialog->show();
+}
+
+
+void MainWindow2::exportNotes(const QString &notes)
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Export Notes"), "", tr("Text Files (*.txt);;All Files (*)"));
+
+    if (!fileName.isEmpty())
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QTextStream out(&file);
+            out << notes;
+            file.close();
+        }
+    }
 }
 
 /* ***** INVENTORY OPERATIONS ***** */
@@ -307,6 +363,18 @@ void MainWindow2::setPurchases()
             db.setTotal();
             QMessageBox::information(this, "Book Added", "Book was added to purchases.");
         }
+    }
+}
+
+void MainWindow2::checkCoupon()
+{
+    QString coupon = ui->couponLineEdit->text();
+    if (db.isValidCouponCode(coupon)) {
+        QMessageBox::information(this, "Valid Coupon", "Discount was successfully applied.");
+        db.applyDiscount();
+    }
+    else {
+        QMessageBox::warning(this, "Invalid Coupon", "Invalid coupon code.");
     }
 }
 

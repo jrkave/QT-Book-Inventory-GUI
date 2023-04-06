@@ -10,6 +10,11 @@
 #include <QVBoxLayout>
 #include <QTableWidget>
 #include <QHeaderView>
+#include <QFileDialog>
+#include <QCoreApplication>
+#include <QFile>
+#include <QStringList>
+
 
 DbManager::DbManager(const QString& path)
     : m_database(QSqlDatabase::addDatabase("QSQLITE"))
@@ -202,7 +207,15 @@ bool DbManager::validQuantity(std::string quant) {
 // Write user list
 void DbManager::writeBooksToCSV(QVector<Book>& books)
 {
-    QFile file(userListFile);
+    // Open a file dialog for the user to select the save location and filename
+    QString fileName = QFileDialog::getSaveFileName(nullptr, QCoreApplication::translate("DbManager", "Export Books"), "", QCoreApplication::translate("DbManager", "CSV Files (*.csv);;All Files (*)"));
+
+    // Check if the user has selected a valid file
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qWarning("Couldn't open file.");
         return;
@@ -221,6 +234,29 @@ void DbManager::writeBooksToCSV(QVector<Book>& books)
     file.close();
 }
 
+/*
+// Write user list
+void DbManager::writeBooksToCSV(QVector<Book>& books)
+{
+    QFile file(userListFile);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning("Couldn't open file.");
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Write header row
+    out << "ISBN,Title,Author,Year\n";
+
+    // Write book data
+    for (const auto& book : books) {
+        out << QString::number(book.ISBN) << "," << QString::fromStdString(book.title) << ","
+            << QString::fromStdString(book.author) << "," << QString::number(book.year) << "\n";
+    }
+    file.close();
+}
+*/
 /* **** CUSTOMER **** */
 
 // Setters
@@ -314,10 +350,18 @@ bool DbManager::addCustomerToDB()
     }
 }
 
-// Writing file to DB
+// Writing file to CSV
 void DbManager::writePurchasesToCSV()
 {
-    QFile file(purchaseListFile);
+    // Open a file dialog for the user to select the save location and filename
+    QString fileName = QFileDialog::getSaveFileName(nullptr, QCoreApplication::translate("DbManager", "Export Purchases"), "", QCoreApplication::translate("DbManager", "CSV Files (*.csv);;All Files (*)"));
+
+    // Check if the user has selected a valid file
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qWarning("Couldn't open file.");
         return;
@@ -325,7 +369,7 @@ void DbManager::writePurchasesToCSV()
 
     QTextStream out(&file);
 
-    // Sort books
+    // Sort purchases
     sortPurchases();
 
     // Write header row
@@ -400,3 +444,39 @@ void DbManager::showDialogBox()
     dialog->exec();
 }
 
+/* **** COUPON CODE FEATURE **** */
+bool DbManager::isValidCouponCode(const QString& couponCode)
+{
+    QFile file(couponFile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning("Couldn't open file.");
+        return false;
+    }
+
+    QTextStream in(&file);
+
+    // Read and process the CSV data
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList fields = line.split(',');
+
+        // Assuming the coupon code is the first field in each row
+        QString currentCouponCode = fields[0].trimmed();
+
+        if (currentCouponCode == couponCode) {
+            // Found a valid coupon code
+            file.close();
+            return true;
+        }
+    }
+
+    // Didn't find a valid coupon code
+    file.close();
+    return false;
+}
+
+void DbManager::applyDiscount()
+{
+    total = total * 0.9;
+    total = static_cast<double>(qRound(total * 100)) / 100.0;
+}
