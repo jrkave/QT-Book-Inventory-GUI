@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QScreen>
 #include <QDesktopServices>
+#include <QSoundEffect>
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +30,10 @@ int main(int argc, char *argv[])
     splash.raise();
     // Delay the application start to display the splash screen
     QTimer::singleShot(3000, &splash, &QWidget::close);
+    // Play sound effect upon opening program
+    QSoundEffect effect;
+    effect.setSource(QUrl::fromLocalFile("://Sound/Untitled _1_.wav"));
+    effect.play();
 
     MainWindow w;
     w.centralWidget()->setGeometry(QGuiApplication::primaryScreen()->geometry()); // set the geometry of the central widget
