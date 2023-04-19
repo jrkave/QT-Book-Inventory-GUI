@@ -4,5 +4,6 @@
         <file>Images/small_logo.png</file>
         <file>CSVs/users.csv</file>
         <file>qtbooks.db</file>
+        <file>Sound/Untitled _1_.wav</file>
     </qresource>
 </RCC>
