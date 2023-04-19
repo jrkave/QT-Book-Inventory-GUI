@@ -58,7 +58,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(BookInvApp PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
+target_link_libraries(BookInvApp PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql Qt6::Multimedia)
 
 set_target_properties(BookInvApp PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
